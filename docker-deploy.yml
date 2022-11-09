@@ -5,7 +5,7 @@ services:
   server:
     restart: always
     build: .
-    command: python scan/server.py
+    command: python server.py
     network_mode: "host"
     extra_hosts:
       - "host.docker.internal:host-gateway"
