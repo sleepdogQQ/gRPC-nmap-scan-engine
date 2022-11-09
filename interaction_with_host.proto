@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+service InteractionWithHost {
+  rpc Register(DjangoHost) returns (RegisterResult) {}
+  rpc RequestHost()
+}
+
+message DjangoHost {
+  string host = 1;
+  string port = 2;
+}
+
+message RegisterResult {
+  string status = 1;
+  string detail = 2;
+}
+
+message Request {
+  string url = 1;
+  string body = 2;  // JSON-like
+}
