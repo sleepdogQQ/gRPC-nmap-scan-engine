@@ -7,6 +7,10 @@ import logging
 import grpc
 import json
 from google.protobuf.json_format import MessageToDict
+import os
+
+KEY_PATH = os.path.join(os.path.split(__file__)[0], 'server.key')
+CRT_PATH = os.path.join(os.path.split(__file__)[0], 'server.crt')
 
 
 class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
@@ -23,8 +27,22 @@ class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     scan_pb2_grpc.add_ScanServiceServicer_to_server(ScanServicer(), server)
-    server.add_insecure_port('0.0.0.0:50051')  # docker
+    # server.add_insecure_port('0.0.0.0:50051')  # docker
     # server.add_insecure_port('127.0.0.1:50051')
+
+    # SSL/TLS
+    try:
+        with open(KEY_PATH) as f:
+            private_key = f.read().encode()
+        with open(CRT_PATH) as f:
+            certificate_chain = f.read().encode()
+    except FileNotFoundError:
+        print("private_key or certificate_chain not found")
+        return
+
+    server_creds = grpc.ssl_server_credentials(((private_key, certificate_chain,),))
+    server.add_secure_port('0.0.0.0:50051', server_creds)
+
     server.start()
     server.wait_for_termination()
 
