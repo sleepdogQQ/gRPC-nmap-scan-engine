@@ -7,10 +7,13 @@ import logging
 import grpc
 import json
 from google.protobuf.json_format import MessageToDict
-import os
+
+from grpc_reflection.v1alpha import reflection
+
 
 KEY_PATH = os.path.join(os.path.split(__file__)[0], 'server.key')
 CRT_PATH = os.path.join(os.path.split(__file__)[0], 'server.crt')
+
 
 
 class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
@@ -23,11 +26,20 @@ class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
             for host, result in each_result.items():
                 yield scan_pb2.ScanResult(ip=host, scan_result=json.dumps(result))
 
-
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     scan_pb2_grpc.add_ScanServiceServicer_to_server(ScanServicer(), server)
-    # server.add_insecure_port('0.0.0.0:50051')  # docker
+
+
+    # Reflection
+    SERVICE_NAMES = (
+        reflection.SERVICE_NAME,
+        scan_pb2.DESCRIPTOR.services_by_name['ScanService'].full_name,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
+
+    server.add_insecure_port('0.0.0.0:50051')  # docker
+
     # server.add_insecure_port('127.0.0.1:50051')
 
     # SSL/TLS
