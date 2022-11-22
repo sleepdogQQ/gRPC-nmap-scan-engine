@@ -38,7 +38,9 @@ def serve():
     )
     reflection.enable_server_reflection(SERVICE_NAMES, server)
 
-    server.add_insecure_port('0.0.0.0:50051')  # docker
+    # 本來下面這句是打開，會導致不需要憑證就可以成功接至50051port
+    # server.add_insecure_port('0.0.0.0:50051')  # docker
+
 
     # server.add_insecure_port('127.0.0.1:50051')
 

@@ -1,3 +1,4 @@
+import os
 import logging
 import grpc
 import json
@@ -18,27 +19,49 @@ scan_condition = {
 }
 
 def run():
+    CRT_PATH = os.path.join('.', 'server.crt')
+
+    with open(CRT_PATH) as f:
+        trusted_certs = f.read().encode()
+
+    # create credentials
+    credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+
+    try:
+        with grpc.secure_channel('localhost:50051', credentials) as channel:
+            stub = scan_pb2_grpc.ScanServiceStub(channel)
+            responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
+            for response in responses:
+                print(response)
+    except grpc.RpcError as rpc_error:
+        # 這裡還可以根據 status code 細分例外處理，但暫時先統一寫 log
+        # logger.error(
+            # f'Received RPC error: code={rpc_error.code()} message={rpc_error.details()} traceback= {traceback.print_exc()}')
+        return 'error'
+
+    # for response in responses:
+    #     print(response)
     # with grpc.insecure_channel('server:50051') as channel:# docker
-    with grpc.insecure_channel('127.0.0.1:50051') as channel:
+    # with grpc.insecure_channel('localhost:50051') as channel:
 
-        # Reflection
-        reflection_db = ProtoReflectionDescriptorDatabase(channel)
-        services = reflection_db.get_services() # 取的所有有註冊的 services 服務
-        print(services)
+    #     # Reflection
+    #     reflection_db = ProtoReflectionDescriptorDatabase(channel)
+    #     services = reflection_db.get_services() # 取的所有有註冊的 services 服務
+    #     print(services)
 
-        # ! 官網範例，但無法在本機成功執行
-        # + 無法更改原程式碼內容，暫不知如何偵錯
-        # desc_pool = DescriptorPool(reflection_db)
-        # server_desc = desc_pool.FindServiceByName('ScanServer')
-        # print(server_desc)
-        # method_desc =  server_desc.FindMethodByName("Scan")
-        # print(method_desc)
+    #     # ! 官網範例，但無法在本機成功執行
+    #     # + 無法更改原程式碼內容，暫不知如何偵錯
+    #     # desc_pool = DescriptorPool(reflection_db)
+    #     # server_desc = desc_pool.FindServiceByName('ScanServer')
+    #     # print(server_desc)
+    #     # method_desc =  server_desc.FindMethodByName("Scan")
+    #     # print(method_desc)
 
-        stub = scan_pb2_grpc.ScanServiceStub(channel)
-        responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
-        for each_response in responses:
-            result = MessageToDict(each_response)
-            # print(type(result.get("status")))
+    #     stub = scan_pb2_grpc.ScanServiceStub(channel)
+    #     responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
+    #     for each_response in responses:
+    #         result = MessageToDict(each_response)
+    #         # print(type(result.get("status")))
 
 if __name__ == '__main__':
     logging.basicConfig()
