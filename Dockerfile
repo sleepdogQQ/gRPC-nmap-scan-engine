@@ -10,4 +10,7 @@ RUN python3 -m pip install -U pip
 RUN python3 -m pip install -U setuptools
 RUN pip install --no-cache-dir -r /requirements.txt
 
+RUN openssl genrsa -out server.key 2048
+RUN openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650 -config ssl.conf
+
 EXPOSE 50051

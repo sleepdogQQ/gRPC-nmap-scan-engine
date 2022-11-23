@@ -5,7 +5,7 @@ import json
 import scan_pb2, scan_pb2_grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.descriptor_pool import DescriptorPool
-from grpc_reflection.v1alpha.proto_reflection_descriptor_database import ProtoReflectionDescriptorDatabase
+# from grpc_reflection.v1alpha.proto_reflection_descriptor_database import ProtoReflectionDescriptorDatabase
 
 scan_condition = {
     "scan_mod":"default",
