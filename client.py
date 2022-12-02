@@ -2,13 +2,14 @@ import os
 import logging
 import grpc
 import json
-import scan_pb2, scan_pb2_grpc
+import scan_pb2
+import scan_pb2_grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.descriptor_pool import DescriptorPool
 # from grpc_reflection.v1alpha.proto_reflection_descriptor_database import ProtoReflectionDescriptorDatabase
 
 scan_condition = {
-    "scan_mod":"default",
+    "scan_mod": "default",
     "scan_host_range": "10.40.192.250-254",
     "scan_host_port": "1-1024",
     "scan_host_exclude": "",
@@ -59,7 +60,7 @@ def run():
     except grpc.RpcError as rpc_error:
         # 這裡還可以根據 status code 細分例外處理，但暫時先統一寫 log
         # logger.error(
-            # f'Received RPC error: code={rpc_error.code()} message={rpc_error.details()} traceback= {traceback.print_exc()}')
+        #     f'Received RPC error: code={rpc_error.code()} message={rpc_error.details()} traceback= {traceback.print_exc()}')
         return 'error'
 
     # for response in responses:
@@ -86,8 +87,7 @@ def run():
     #         result = MessageToDict(each_response)
     #         # print(type(result.get("status")))
 
+
 if __name__ == '__main__':
     logging.basicConfig()
     run()
-
-
