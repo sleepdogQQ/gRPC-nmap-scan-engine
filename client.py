@@ -18,17 +18,40 @@ scan_condition = {
     "scan_args": ""
 }
 
+# 先把 Token 寫在這，好理解
+_ACCESS_TOKEN = "systex_token"
+
+
+class AuthGateway(grpc.AuthMetadataPlugin):
+
+    def __call__(self, context, callback):
+        signature = context.method_name[::-1]
+        callback(((_ACCESS_TOKEN, signature),), None)
+
+
 def run():
+
+    # create 自定義的 credentials
+    call_credentials = grpc.metadata_call_credentials(
+        AuthGateway(), name='auth gateway')
+
     CRT_PATH = os.path.join('.', 'server.crt')
 
     with open(CRT_PATH) as f:
         trusted_certs = f.read().encode()
 
-    # create credentials
-    credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+    # create SSL credentials
+    channel_credentials = grpc.ssl_channel_credentials(
+        root_certificates=trusted_certs)
+
+    # 組合成複合 credentials
+    composite_credentials = grpc.composite_channel_credentials(
+        channel_credentials,
+        call_credentials,
+    )
 
     try:
-        with grpc.secure_channel('localhost:50051', credentials) as channel:
+        with grpc.secure_channel('localhost:50051', composite_credentials) as channel:
             stub = scan_pb2_grpc.ScanServiceStub(channel)
             responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
             for response in responses:

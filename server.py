@@ -14,6 +14,29 @@ from grpc_reflection.v1alpha import reflection
 KEY_PATH = os.path.join(os.path.split(__file__)[0], 'server.key')
 CRT_PATH = os.path.join(os.path.split(__file__)[0], 'server.crt')
 
+# 先把 Token 寫在這，好理解
+_ACCESS_TOKEN = "systex_token"
+
+
+class SignatureValidationInterceptor(grpc.ServerInterceptor):
+
+    def __init__(self):
+
+        def abort(ignored_request, context):
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, 'Invalid signature')
+
+        self._abortion = grpc.unary_unary_rpc_method_handler(abort)
+
+    def intercept_service(self, continuation, handler_call_details):
+
+        method_name = handler_call_details.method.split('/')[-1]
+
+        expected_metadata = (_ACCESS_TOKEN, method_name[::-1])
+
+        if expected_metadata in handler_call_details.invocation_metadata:
+            return continuation(handler_call_details)
+        else:
+            return self._abortion
 
 
 class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
@@ -27,7 +50,8 @@ class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
                 yield scan_pb2.ScanResult(ip=host, scan_result=json.dumps(result))
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(
+        max_workers=10), interceptors=(SignatureValidationInterceptor(),))
     scan_pb2_grpc.add_ScanServiceServicer_to_server(ScanServicer(), server)
 
 
