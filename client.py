@@ -2,13 +2,14 @@ import os
 import logging
 import grpc
 import json
-import scan_pb2, scan_pb2_grpc
+import scan_pb2
+import scan_pb2_grpc
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.descriptor_pool import DescriptorPool
 # from grpc_reflection.v1alpha.proto_reflection_descriptor_database import ProtoReflectionDescriptorDatabase
 
 scan_condition = {
-    "scan_mod":"default",
+    "scan_mod": "default",
     "scan_host_range": "10.40.192.250-254",
     "scan_host_port": "1-1024",
     "scan_host_exclude": "",
@@ -18,17 +19,40 @@ scan_condition = {
     "scan_args": ""
 }
 
+# 先把 Token 寫在這，好理解
+_ACCESS_TOKEN = "systex_token"
+
+
+class AuthGateway(grpc.AuthMetadataPlugin):
+
+    def __call__(self, context, callback):
+        signature = context.method_name[::-1]
+        callback(((_ACCESS_TOKEN, signature),), None)
+
+
 def run():
+
+    # create 自定義的 credentials
+    call_credentials = grpc.metadata_call_credentials(
+        AuthGateway(), name='auth gateway')
+
     CRT_PATH = os.path.join('.', 'server.crt')
 
     with open(CRT_PATH) as f:
         trusted_certs = f.read().encode()
 
-    # create credentials
-    credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+    # create SSL credentials
+    channel_credentials = grpc.ssl_channel_credentials(
+        root_certificates=trusted_certs)
+
+    # 組合成複合 credentials
+    composite_credentials = grpc.composite_channel_credentials(
+        channel_credentials,
+        call_credentials,
+    )
 
     try:
-        with grpc.secure_channel('localhost:50051', credentials) as channel:
+        with grpc.secure_channel('localhost:50051', composite_credentials) as channel:
             stub = scan_pb2_grpc.ScanServiceStub(channel)
             responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
             for response in responses:
@@ -36,7 +60,7 @@ def run():
     except grpc.RpcError as rpc_error:
         # 這裡還可以根據 status code 細分例外處理，但暫時先統一寫 log
         # logger.error(
-            # f'Received RPC error: code={rpc_error.code()} message={rpc_error.details()} traceback= {traceback.print_exc()}')
+        #     f'Received RPC error: code={rpc_error.code()} message={rpc_error.details()} traceback= {traceback.print_exc()}')
         return 'error'
 
     # for response in responses:
@@ -63,8 +87,7 @@ def run():
     #         result = MessageToDict(each_response)
     #         # print(type(result.get("status")))
 
+
 if __name__ == '__main__':
     logging.basicConfig()
     run()
-
-
