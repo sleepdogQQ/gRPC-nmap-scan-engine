@@ -8,20 +8,9 @@ from datetime import datetime
 from typing import Dict
 import traceback
 import platform
+from unit_tool import Logger
 
-# logger = logging.getLogger("debug")
-
-import logger
-logger = logger.Logger(__name__, "./logs/record.log")
-
-# mod = [
-#     "no exist",
-#     " -A ",
-#     " -sn -n ",
-#     " -sS --top-ports 3382 ",
-#     " -sU --top-ports 15094 ",
-#     " -sO --top-ports 3382 "
-# ]
+logger = Logger.debug_level()
 
 class Scanner:
     def __init__(self):
@@ -80,8 +69,6 @@ class Scanner:
         try:
             assert self.hosts != "", "請先確定 scan host 範圍已指定"
             nm = nmap.PortScanner()
-            logger.info(self.hosts)
-            logger.info(self.args)
             logger.info(' :'.join([self.hosts, self.args]))
             logger.info("start time:" +
                         datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -95,8 +82,6 @@ class Scanner:
             logger.info("end   time:" +
                         datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
             # 輸出結果
-            logger.info('res==')
-            logger.info(result)
             return result
         except:
             logger.info(" scan 發生預期外錯誤，已回傳空字典")

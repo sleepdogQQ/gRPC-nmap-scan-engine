@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+service ScanService {
+  rpc Scan(ScanParameter) returns (stream ScanResult) {}
+//  rpc GetStream(ScanParameter) returns (stream ScanResult) {}
+}
+
+message ScanParameter {
+  // todo
+  string scan_mod = 1;
+  string scan_host_range = 2;
+  string scan_host_port = 3;
+  string scan_host_exclude = 4;
+  string scan_speed = 5;
+  string scan_delay = 6;
+  string scan_host_timeout = 7;
+  string scan_args = 8;
+}
+
+message ScanResult {
+  string ip = 1;
+  string scan_result = 2;
+}
+
+message HostConfig {
+  string host = 1;
+  int32 port = 2;
+}
+
+message SNMPConfig {
+  string read_community = 1;
+  string version = 2;
+  int32 max_repetitions = 3;
+  bool convert_to_string = 4;
+  string oid = 5;
+}
+
+message BaseRequest {
+  string scan_type = 1;
+  HostConfig host_config = 2;
+  SNMPConfig snmp_config = 3;
+}
+
+// Scan read_communit 不會是單一值
+message ScanSNMPConfig {
+  repeated string read_community = 1;
+  string version = 2;
+  int32 max_repetitions = 3;
+  bool convert_to_string = 4;
+  string oid = 5;
+}
+
+message ScanNMAPConfig {
+  repeated string network = 1;
+  int32 port = 2;
+  string scan_spend = 3;
+}
+
+message DiscoverRequest {
+  bool update_dynamic = 1;
+  ScanNMAPConfig nmap_config = 2;
+  ScanSNMPConfig snmp_config = 3;
+}
+
+message SNMPResponse {
+  bool status = 1;
+  string message = 2;
+  string result = 3;
+}
+
+service SNMPService {
+  rpc Base(BaseRequest) returns (SNMPResponse) {}
+  rpc Discover(DiscoverRequest) returns (SNMPResponse) {}
+}

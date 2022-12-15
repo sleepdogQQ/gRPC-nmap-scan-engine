@@ -3,3 +3,8 @@ grpcio-tools
 requests
 python-nmap
 grpcio-reflection
+PyYAML
+python-dotenv
+beautifulsoup4
+pysnmp
+

@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.vscode
+tempenv
+.pytest_cache
+
+# poetry 
+poetry.lock
+pyproject.toml
+
+# Pyre type checker
+.pyre/
+.DS_Store
+
+# PyCharm
+/.idea
+
+# Env
+venv/
+.venv/
+
