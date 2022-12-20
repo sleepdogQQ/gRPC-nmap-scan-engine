@@ -78,10 +78,9 @@ scan_data = {
 logger = Logger.debug_level()
 
 def run():
-    client = BasegRPClient("localhost", 50051)
+    client = BasegRPClient("grpc-on-206", 50051)
     try:
         with client.run() as channel:
-            
             # Reflection
             reflection_db = ProtoReflectionDescriptorDatabase(channel)
             services = reflection_db.get_services() # 取的所有有註冊的 services 服務
@@ -91,8 +90,8 @@ def run():
             # for response in responses:
             #     print(response)
             snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
-            # response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**getbulk_data)))
-            response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
+            response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**getbulk_data)))
+            # response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
             print(response)
             return response
     except grpc.RpcError as rpc_error:

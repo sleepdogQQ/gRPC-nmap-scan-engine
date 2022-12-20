@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 from base_grpc.proto_file import scan_pb2_grpc, scan_pb2
 from typing import List
-import nmmain
 import grpc
 import json
 import os
@@ -274,7 +273,7 @@ if __name__ == '__main__':
         "interceptors" : (SignatureValidationInterceptor(),)
     }
 
-    server = Server("localhost", 50051)
+    server = Server("grpc-on-206", 50051)
     server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
     server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
     # 需要先有實體才能設定的功能
