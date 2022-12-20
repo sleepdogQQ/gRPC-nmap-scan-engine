@@ -277,6 +277,7 @@ if __name__ == '__main__':
     server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
     server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
     # 需要先有實體才能設定的功能
+    # --------------------------------
     server.register_service() # 註冊功能到實體上
     server.setting_reflection() # 在實體上開啟反射功能
     # --------------------------------
