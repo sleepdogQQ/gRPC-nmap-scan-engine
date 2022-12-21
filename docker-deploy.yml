@@ -2,7 +2,7 @@ version: "3"
 
 services:
 
-  server:
+  grpc_server:
     restart: always
     build: .
     command: python -O server.py
