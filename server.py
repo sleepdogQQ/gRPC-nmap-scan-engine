@@ -273,7 +273,7 @@ if __name__ == '__main__':
         "interceptors" : (SignatureValidationInterceptor(),)
     }
 
-    server = Server("grpc-on-206", 50051)
+    server = Server("host.docker.internal", 50051)
     server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
     server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
     # 需要先有實體才能設定的功能
