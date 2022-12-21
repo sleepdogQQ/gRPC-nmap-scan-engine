@@ -13,7 +13,7 @@ import traceback
 from pysnmp.smi.error import NoSuchObjectError
 from google.protobuf.json_format import MessageToDict
 from grpc_reflection.v1alpha import reflection
-from base_grpc.grpc_server import SSLgRPCServer
+from base_grpc.grpc_server import SSLgRPCServer, BasegRPCServer
 from apps.snmp.entity import SNMPBaseHandler, SNMPServerInfo
 from apps.nmap_scan.nmmain import Scanner
 
@@ -244,7 +244,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             logger.debug(traceback.format_exc())
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
 
-class Server(SSLgRPCServer):
+class Server(BasegRPCServer):
     KEY_PATH = os.getenv("GRPC_KEY_PATH")
     CRT_PATH = os.getenv("GRPC_CRT_PATH")
 
