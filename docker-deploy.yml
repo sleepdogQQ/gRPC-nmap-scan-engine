@@ -11,6 +11,8 @@ services:
     #   - "host.docker.internal:host-gateway"
     # extra_hosts:
     #   - "grpc-on-206:127.0.0.1"
+    ports:
+      - "50051:50051"
     networks:
       - proxy
   
