@@ -245,8 +245,8 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
 
 class Server(BasegRPCServer):
-    KEY_PATH = os.getenv("GRPC_KEY_PATH")
-    CRT_PATH = os.getenv("GRPC_CRT_PATH")
+    # KEY_PATH = os.getenv("GRPC_KEY_PATH")
+    # CRT_PATH = os.getenv("GRPC_CRT_PATH")
 
     def __init__(self, host:str, port:int):
         super().__init__(host, port)
@@ -273,7 +273,7 @@ if __name__ == '__main__':
         "interceptors" : (SignatureValidationInterceptor(),)
     }
 
-    server = Server("grpc-on-206", 50051)
+    server = Server("[::]", 50051)
     server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
     server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
     # 需要先有實體才能設定的功能
