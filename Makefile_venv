@@ -3,7 +3,7 @@
 Dockerfile_Name = Dockerfile
 SETTING_FILE = docker-deploy.yml
 
-all: docekr_image_clean docker_init
+all: docekr_image_clean remove_all_image docker_init
 
 docker_build:
 	@docker build -f $(Dockerfile_Name) .
@@ -17,6 +17,8 @@ docker_volume_clean:
 docekr_image_clean:docker_clean docker_volume_clean
 	@docker image prune
 
+remove_all_image:
+	@docker rmi -f $$(docker images -aq)
 
 remove_poetry_venv:
 	@rm -f pyproject.toml
