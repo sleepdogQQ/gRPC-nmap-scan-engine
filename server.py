@@ -245,8 +245,8 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
 
 class Server(BasegRPCServer):
-    # KEY_PATH = os.getenv("GRPC_KEY_PATH")
-    # CRT_PATH = os.getenv("GRPC_CRT_PATH")
+    KEY_PATH = os.getenv("GRPC_KEY_PATH")
+    CRT_PATH = os.getenv("GRPC_CRT_PATH")
 
     def __init__(self, host:str, port:int):
         super().__init__(host, port)
