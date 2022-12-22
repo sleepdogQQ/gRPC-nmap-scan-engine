@@ -244,7 +244,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             logger.debug(traceback.format_exc())
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
 
-class Server(BasegRPCServer):
+class Server(SSLgRPCServer):
     KEY_PATH = os.getenv("GRPC_KEY_PATH")
     CRT_PATH = os.getenv("GRPC_CRT_PATH")
 
@@ -273,7 +273,7 @@ if __name__ == '__main__':
         "interceptors" : (SignatureValidationInterceptor(),)
     }
 
-    server = Server("0.0.0.0", 50051)
+    server = Server("grpc-on-52", 50051)
     server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
     server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
     # 需要先有實體才能設定的功能

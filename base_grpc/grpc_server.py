@@ -80,6 +80,6 @@ class SSLgRPCServer(BasegRPCServer,
             self._SERVER_CERTIFICATE_KEY,
             self._SERVER_CERTIFICATE,
         ),))
-        self._SERVER.add_secure_port('0.0.0.0:50051', channel_credential)
+        self._SERVER.add_secure_port(f'{self.host}:{self.port}', channel_credential)
         self._SERVER.start()
         self._SERVER.wait_for_termination()
