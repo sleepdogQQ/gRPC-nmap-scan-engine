@@ -7,8 +7,8 @@ services:
     build: .
     command: python -O server.py
     # network_mode: "host"
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # extra_hosts:
     #   - "grpc-on-206:127.0.0.1"
     ports:
