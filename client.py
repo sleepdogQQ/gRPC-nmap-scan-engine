@@ -9,6 +9,7 @@ from google.protobuf.descriptor_pool import DescriptorPool
 from base_grpc.grpc_client import BasegRPClient
 from unit_tool.logger_unit import Logger
 from grpc_reflection.v1alpha.proto_reflection_descriptor_database import ProtoReflectionDescriptorDatabase
+from unit_tool.base_unit import record_program_process
 
 scan_condition = {
     "scan_mod": "default",
@@ -78,7 +79,7 @@ scan_data = {
 logger = Logger.debug_level()
 
 def run():
-    client = BasegRPClient("grpc-on-206", 50051)
+    client = BasegRPClient("grpc-on-52", 50051)
     try:
         with client.run() as channel:
             # Reflection
@@ -94,6 +95,12 @@ def run():
             # response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
             print(response)
             return response
+    except TypeError:
+        message = "check env is useful"
+        record_program_process(logger, message)
+    except FileNotFoundError:
+        message = "check file is exist"
+        record_program_process(logger, message)
     except grpc.RpcError as rpc_error:
         # 這裡還可以根據 status code 細分例外處理，但暫時先統一寫 log
         logger.debug(

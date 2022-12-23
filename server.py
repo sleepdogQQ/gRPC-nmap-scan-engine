@@ -16,6 +16,7 @@ from grpc_reflection.v1alpha import reflection
 from base_grpc.grpc_server import SSLgRPCServer, BasegRPCServer
 from apps.snmp.entity import SNMPBaseHandler, SNMPServerInfo
 from apps.nmap_scan.nmmain import Scanner
+from unit_tool.base_unit import record_program_process
 
 from  unit_tool.logger_unit import Logger
 logger = Logger.debug_level()
@@ -75,7 +76,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             else:
                 return scan_pb2.SNMPResponse(status=True, message="result is empty.", result=None)
         except:
-            message = " unexcption error happend"
+            message = " Base unexcption error happend"
             logger.info(message)
             logger.debug(sys.exc_info())
             logger.debug(traceback.format_exc())
@@ -238,7 +239,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             
             return scan_pb2.SNMPResponse(status=True, message="success", result=json.dumps(result))
         except:
-            message = " unexception error happend"
+            message = " Discover unexception error happend"
             logger.info(message)
             logger.debug(sys.exc_info())
             logger.debug(traceback.format_exc())
@@ -267,19 +268,33 @@ class Server(SSLgRPCServer):
         reflection.enable_server_reflection(SERVICE_NAMES, self._SERVER)
         
 if __name__ == '__main__':
-    logger.info("--begin--")
     setting_config = {
         "max_workers": 10, 
         "interceptors" : (SignatureValidationInterceptor(),)
     }
-    
-    server = Server("[::]", 50051)
-    server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
-    server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
-    # 需要先有實體才能設定的功能
-    # --------------------------------
-    server.register_service() # 註冊功能到實體上
-    server.setting_reflection() # 在實體上開啟反射功能
-    # --------------------------------
-    server.run() # 啟動服務
-
+    try:
+        server = Server("[::]", 50051)
+        server.setting_base_config(setting_config)# 設定 grpc Server 通用基礎設定
+        server.init_server_beforce_run() # 套用設定並建立 Server 實體物件
+        # 需要先有實體才能設定的功能
+        # --------------------------------
+        server.register_service() # 註冊功能到實體上
+        server.setting_reflection() # 在實體上開啟反射功能
+        # --------------------------------
+        record_program_process(logger, '...running...')
+        server.run_with_ssl() # 啟動服務
+    except TypeError:
+        message = "check env is useful"
+        record_program_process(logger, message)
+    except FileNotFoundError:
+        message = "check file is exist"
+        record_program_process(logger, message)
+    except KeyboardInterrupt:
+        message = "...running stop..."
+        record_program_process(logger, message)
+    except:
+        message = "main unexceptional error"
+        record_program_process(logger, message)
+        logger.debug(sys.exc_info())
+        logger.debug(traceback.format_exc())
+        

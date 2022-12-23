@@ -2,6 +2,10 @@
 # author: AxelHowe
 import grpc
 from concurrent import futures
+from unit_tool.logger_unit import Logger
+from unit_tool.base_unit import record_program_process
+
+logger = Logger.debug_level()
 
 class SSLCredentialsMixin:
     CRT_PATH = None
@@ -16,12 +20,19 @@ class SSLCredentialsMixin:
         '''
         讀取 SSL 憑證檔案
         '''
-        with open(self.CRT_PATH, 'rb') as f:
-            self._SERVER_CERTIFICATE = f.read()
-        with open(self.KEY_PATH, 'rb') as f:
-            self._SERVER_CERTIFICATE_KEY = f.read()
-
-
+        try:
+            with open(self.CRT_PATH, 'rb') as f:
+                self._SERVER_CERTIFICATE = f.read()
+            with open(self.KEY_PATH, 'rb') as f:
+                self._SERVER_CERTIFICATE_KEY = f.read()
+        except TypeError as e:
+            message = f"the CRT_PATH or KEY_PATH still is None, please confime the env is useful"
+            record_program_process(logger, message)
+            raise e
+        except FileNotFoundError as e:
+            message = f"not find the credentials *({self.CRT_PATH}) or *({self.KEY_PATH}), please check the file is exist"
+            record_program_process(logger, message)
+            raise e
 class BasegRPCServer:
 
     _SERVER = None
@@ -56,7 +67,7 @@ class BasegRPCServer:
         """
         pass
 
-    def run(self):
+    def run_without_ssl(self):
         '''
         沒有 SSL 憑證
         '''
@@ -72,7 +83,7 @@ class SSLgRPCServer(BasegRPCServer,
         super(BasegRPCServer, self).__init__()
         super(SSLCredentialsMixin, self).__init__()
 
-    def run(self):
+    def run_with_ssl(self):
         '''
         有 SSL 憑證
         '''
