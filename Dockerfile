@@ -11,7 +11,7 @@ COPY ./ .
 
 RUN python3 -m pip install -U pip
 RUN python3 -m pip install -U setuptools
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir -r ./requirements.txt
 
 # RUN openssl genrsa -out base_grpc/SSL/server.key 2048
 # RUN openssl req -new -config ssl.conf -x509 -sha256 -key base_grpc/SSL/server.key -out base_grpc/SSL/server.crt -days 3650 
