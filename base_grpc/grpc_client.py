@@ -7,9 +7,7 @@ _ACCESS_TOKEN = "systex_token"
 # 與 server 相同
 class SSLCredentialsMixin:
     CRT_PATH = None
-    KEY_PATH = None
     _SERVER_CERTIFICATE = None
-    _SERVER_CERTIFICATE_KEY = None
 
     def __init__(self) -> None:
         self.load_credentials()
@@ -20,8 +18,6 @@ class SSLCredentialsMixin:
         '''
         with open(self.CRT_PATH, 'rb') as f:
             self._SERVER_CERTIFICATE = f.read()
-        with open(self.KEY_PATH, 'rb') as f:
-            self._SERVER_CERTIFICATE_KEY = f.read()
 
 class AuthGateway(grpc.AuthMetadataPlugin):
 
@@ -36,6 +32,10 @@ class BasegRPClient(SSLCredentialsMixin):
         self.host = host
         self.port = port
         self.composite_credentials = self.setting_ssl()
+
+        super().__init__()
+        super(SSLCredentialsMixin, self).__init__()
+
 
     def setting_ssl(self):
         call_credentials = grpc.metadata_call_credentials(
