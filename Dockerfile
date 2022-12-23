@@ -4,6 +4,9 @@ FROM base as builder
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends vim git nmap
 
+
+RUN mkdir /grpc_server
+WORKDIR /grpc_server
 COPY ./ .
 
 RUN python3 -m pip install -U pip
