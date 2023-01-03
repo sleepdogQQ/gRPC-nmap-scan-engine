@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # date: 2022/12/15
 # author: yuchen
+import warnings
+warnings.filterwarnings("ignore")
 from dotenv import load_dotenv
 load_dotenv()
 from base_grpc.proto_file import scan_pb2_grpc, scan_pb2
@@ -9,6 +11,7 @@ import grpc
 import json
 import os
 import sys
+import requests
 import traceback
 from pysnmp.smi.error import NoSuchObjectError
 from google.protobuf.json_format import MessageToDict
@@ -17,6 +20,7 @@ from base_grpc.grpc_server import SSLgRPCServer, BasegRPCServer
 from apps.snmp.entity import SNMPBaseHandler, SNMPServerInfo
 from apps.nmap_scan.nmmain import Scanner
 from unit_tool.base_unit import record_program_process
+from apps.rapid7_asset.middleware import Rapid7API, Rapid7Handler
 
 from  unit_tool.logger_unit import Logger
 logger = Logger.debug_level()
@@ -46,7 +50,7 @@ class SignatureValidationInterceptor(grpc.ServerInterceptor):
 class ScanServicer(scan_pb2_grpc.ScanServiceServicer):
 
     def Scan(self, request, context):
-        scanner = nmmain.Scanner()
+        scanner = Scanner()
         # + MessageToDict 和 MessageToJson 需要加上 preserving_proto_field_name=True，不然會自動將格式轉譯成小駝峰式
         result = scanner.nmap_scan(condition=MessageToDict(
             request, preserving_proto_field_name=True))
@@ -245,6 +249,58 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             logger.debug(traceback.format_exc())
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
 
+class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
+    def Base(self, request, context) -> scan_pb2.Rapid7Response:
+        try:
+            logger.info(" --Rapid7_Base action begin--")
+            data = MessageToDict(request, preserving_proto_field_name=True)
+            # Server API 設定
+            rapid7_api = Rapid7API()
+            rapid7_api.setting_host_port(data.get("host"), data.get("port"))
+            rapid7_api.setting_url(data.get("api_url"))
+            rapid7_api.setting_auth(data.get("api_user"), data.get("api_password"))
+            # 中間件
+            rapid7handler = Rapid7Handler()
+            rapid7handler.setting_rapid7_api_source(rapid7_api)
+            # 核心邏輯
+            site_info = rapid7handler.get_sites_detail(data.get("site_regex")) # 包含取得與過濾
+            if(site_info == {}):
+                message = "No any data need to be recorded"
+                logger.info(message)
+                return scan_pb2.Rapid7Response(status=True, message=message, result="")
+            
+            final_res = list()
+            site_entity_set = rapid7handler.create_site_entity_set(site_info.get("resources", []))
+            for each_site in site_entity_set:
+                asset_list = rapid7handler.get_assets_detail_and_create_asset_entity_set(each_site, page_size=data.get("asset_page_size", 10))
+                each_site.add_belong_asset_data(asset_list)
+                temp_res = dict()
+                for each_asset_data in each_site.belong_asset:
+                    temp_res.update({"ip":each_asset_data.ip})
+                    temp_res.update({"detail":each_asset_data.detail})
+                final_res.append(temp_res)
+            
+        except requests.exceptions.ReadTimeout:
+            message = f"the requests action timed out, please check the server still works"
+            logger.info(message)
+            logger.debug(traceback.format_exc())
+            return scan_pb2.Rapid7Response(status=False, message=message, result="")
+        except json.decoder.JSONDecodeError as e:
+            message = f'json parse fail'
+            logger.info(message)
+            logger.debug(traceback.format_exc())
+            return scan_pb2.Rapid7Response(status=False, message=message, result="")
+        except:
+            message = "unexpected exception"
+            logger.info(message)
+            logger.debug(sys.exc_info())
+            logger.debug(traceback.format_exc())
+            return scan_pb2.Rapid7Response(status=False, message=message, result="")
+        else:
+            return scan_pb2.Rapid7Response(status=True, message="Success", result=json.dumps(final_res))
+        finally:
+            logger.info(" --Rapid7_Base action end--")
+
 class Server(SSLgRPCServer):
     KEY_PATH = os.getenv("GRPC_KEY_PATH")
     CRT_PATH = os.getenv("GRPC_CRT_PATH")
@@ -258,12 +314,15 @@ class Server(SSLgRPCServer):
             ScanServicer(), self._SERVER)
         scan_pb2_grpc.add_SNMPServiceServicer_to_server(
             SnmpServicer(), self._SERVER)
+        scan_pb2_grpc.add_Rapid7ServiceServicer_to_server(
+            Rapid7Servicer(), self._SERVER)
     
     def setting_reflection(self):
         SERVICE_NAMES = (
             reflection.SERVICE_NAME,
             scan_pb2.DESCRIPTOR.services_by_name['ScanService'].full_name,
             scan_pb2.DESCRIPTOR.services_by_name['SNMPService'].full_name,
+            scan_pb2.DESCRIPTOR.services_by_name['Rapid7Service'].full_name
         )
         reflection.enable_server_reflection(SERVICE_NAMES, self._SERVER)
         
@@ -286,12 +345,15 @@ if __name__ == '__main__':
     except TypeError:
         message = "check env is useful"
         record_program_process(logger, message)
+        logger.debug(traceback.format_exc())
     except FileNotFoundError:
         message = "check file is exist"
         record_program_process(logger, message)
+        logger.debug(traceback.format_exc())
     except KeyboardInterrupt:
         message = "...running stop..."
         record_program_process(logger, message)
+        logger.debug(traceback.format_exc())
     except:
         message = "main unexceptional error"
         record_program_process(logger, message)

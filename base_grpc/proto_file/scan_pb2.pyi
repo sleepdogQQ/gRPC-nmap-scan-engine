@@ -33,6 +33,32 @@ class HostConfig(_message.Message):
     port: int
     def __init__(self, host: _Optional[str] = ..., port: _Optional[int] = ...) -> None: ...
 
+class Rapid7Request(_message.Message):
+    __slots__ = ["api_password", "api_url", "api_user", "host", "port", "site_regex"]
+    API_PASSWORD_FIELD_NUMBER: _ClassVar[int]
+    API_URL_FIELD_NUMBER: _ClassVar[int]
+    API_USER_FIELD_NUMBER: _ClassVar[int]
+    HOST_FIELD_NUMBER: _ClassVar[int]
+    PORT_FIELD_NUMBER: _ClassVar[int]
+    SITE_REGEX_FIELD_NUMBER: _ClassVar[int]
+    api_password: str
+    api_url: str
+    api_user: str
+    host: str
+    port: int
+    site_regex: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, host: _Optional[str] = ..., port: _Optional[int] = ..., api_url: _Optional[str] = ..., api_user: _Optional[str] = ..., api_password: _Optional[str] = ..., site_regex: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class Rapid7Response(_message.Message):
+    __slots__ = ["message", "result", "status"]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    RESULT_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    message: str
+    result: str
+    status: bool
+    def __init__(self, status: bool = ..., message: _Optional[str] = ..., result: _Optional[str] = ...) -> None: ...
+
 class SNMPConfig(_message.Message):
     __slots__ = ["convert_to_string", "max_repetitions", "oid", "read_community", "version"]
     CONVERT_TO_STRING_FIELD_NUMBER: _ClassVar[int]

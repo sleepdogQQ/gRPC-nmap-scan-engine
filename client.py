@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 load_dotenv()
-import os
 import traceback
 import grpc
 from base_grpc.proto_file import scan_pb2, scan_pb2_grpc
@@ -76,6 +75,15 @@ scan_data = {
     "update_dynamic":False
 }
 
+rapid7_data = {
+    "host":"10.11.109.101",
+    "port":3780,
+    "api_url":"api/3",
+    "api_user":"nxadmin",
+    "api_password":"nxadmin",
+    "site_regex":["^B85B[\w]+"]
+}
+
 logger = Logger.debug_level()
 
 def run():
@@ -85,14 +93,19 @@ def run():
             # Reflection
             reflection_db = ProtoReflectionDescriptorDatabase(channel)
             services = reflection_db.get_services() # 取的所有有註冊的 services 服務
+            # print(services)
+            # desc_pool = DescriptorPool(reflection_db)
+            # print(desc_pool.FindServiceByName("Rapid7Service"))
 
             # stub = scan_pb2_grpc.ScanServiceStub(channel)
             # responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
             # for response in responses:
             #     print(response)
-            snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
-            response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**getbulk_data)))
+            # snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
+            # response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**getbulk_data)))
             # response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
+            rapid7_stub = scan_pb2_grpc.Rapid7ServiceStub(channel)
+            response = MessageToDict(rapid7_stub.Base(scan_pb2.Rapid7Request(**rapid7_data)))
             print(response)
             return response
     except TypeError:

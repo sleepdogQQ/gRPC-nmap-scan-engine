@@ -22,6 +22,8 @@ message ScanResult {
   string scan_result = 2;
 }
 
+
+// SNMP
 message HostConfig {
   string host = 1;
   int32 port = 2;
@@ -41,9 +43,8 @@ message BaseRequest {
   SNMPConfig snmp_config = 3;
 }
 
-// Scan read_communit 不會是單一值
 message ScanSNMPConfig {
-  repeated string read_community = 1;
+  repeated string read_community = 1; //list
   string version = 2;
   int32 max_repetitions = 3;
   bool convert_to_string = 4;
@@ -51,7 +52,7 @@ message ScanSNMPConfig {
 }
 
 message ScanNMAPConfig {
-  repeated string network = 1;
+  repeated string network = 1; //list
   int32 port = 2;
   string scan_spend = 3;
 }
@@ -72,3 +73,24 @@ service SNMPService {
   rpc Base(BaseRequest) returns (SNMPResponse) {}
   rpc Discover(DiscoverRequest) returns (SNMPResponse) {}
 }
+
+// Rapid7_Site
+message Rapid7Request {
+  string host = 1;
+  int32 port = 2;
+  string api_url = 3;
+  string api_user = 4;
+  string api_password = 5;
+  repeated string site_regex = 6;
+}
+
+message Rapid7Response {
+  bool status = 1;
+  string message = 2;
+  string result = 3;
+}
+
+service Rapid7Service {
+  rpc Base(Rapid7Request) returns (Rapid7Response) {}
+}
+
