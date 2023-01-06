@@ -20,7 +20,7 @@ from base_grpc.grpc_server import SSLgRPCServer, BasegRPCServer
 from apps.snmp.entity import SNMPBaseHandler, SNMPServerInfo
 from apps.nmap_scan.nmmain import Scanner
 from unit_tool.base_unit import record_program_process
-from apps.rapid7_asset.middleware import Rapid7API, Rapid7Handler
+from apps.rapid7_asset.middleware import Rapid7API, Rapid7Handler, UploadServer
 
 from  unit_tool.logger_unit import Logger
 logger = Logger.debug_level()
@@ -259,9 +259,15 @@ class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
             rapid7_api.setting_host_port(data.get("host"), data.get("port"))
             rapid7_api.setting_url(data.get("api_url"))
             rapid7_api.setting_auth(data.get("api_user"), data.get("api_password"))
-            # 中間件
+            # Upload Server API 設定
+            db_server = UploadServer()
+            db_server.setting_host_port(os.getenv('DB_SERVER'), os.getenv('DB_PORT')) 
+            db_server.setting_token(os.getenv("DB_TOKEN"))
+            db_server.setting_headers()
+            # 中間件 設定
             rapid7handler = Rapid7Handler()
             rapid7handler.setting_rapid7_api_source(rapid7_api)
+            rapid7handler.setting_upload_api_source(db_server)
             # 核心邏輯
             site_info = rapid7handler.get_sites_detail(data.get("site_regex")) # 包含取得與過濾
             if(site_info == {}):
@@ -271,14 +277,16 @@ class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
             
             final_res = list()
             site_entity_set = rapid7handler.create_site_entity_set(site_info.get("resources", []))
+            # asset detail
             for each_site in site_entity_set:
                 asset_list = rapid7handler.get_assets_detail_and_create_asset_entity_set(each_site, page_size=data.get("asset_page_size", 10))
                 each_site.add_belong_asset_data(asset_list)
-                temp_res = dict()
-                for each_asset_data in each_site.belong_asset:
-                    temp_res.update({"ip":each_asset_data.ip})
-                    temp_res.update({"detail":each_asset_data.detail})
-                final_res.append(temp_res)
+            # asset vul detail
+            for each_site in site_entity_set:
+                rapid7handler.get_rapid7_vul_report_info(each_site) # (report_id, instance_id)
+            
+            rapid7handler.upload_asset_info(each_site.belong_asset)
+            rapid7handler.upload_asset_vul_info()
             
         except requests.exceptions.ReadTimeout:
             message = f"the requests action timed out, please check the server still works"
@@ -290,8 +298,13 @@ class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
             logger.info(message)
             logger.debug(traceback.format_exc())
             return scan_pb2.Rapid7Response(status=False, message=message, result="")
+        except RuntimeError:
+            message = "ckeck other exception message"
+            logger.info(message)
+            logger.debug(traceback.format_exc())
+            return scan_pb2.Rapid7Response(status=False, message=message, result="")
         except:
-            message = "unexpected exception"
+            message = "unexpected"
             logger.info(message)
             logger.debug(sys.exc_info())
             logger.debug(traceback.format_exc())

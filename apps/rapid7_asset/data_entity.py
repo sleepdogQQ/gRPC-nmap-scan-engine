@@ -17,6 +17,11 @@ class Site():
     def __init__(self, id:int):
         self.id = id
         self.belong_asset = list()
+        self.belong_report_info = tuple()
         
     def add_belong_asset_data(self, asset_list:list):
         self.belong_asset.extend(asset_list)
+    
+    def setting_belong_report_info_data(self, vul_report_id:int, vul_instance_id:int):
+        self.vul_report_id = vul_report_id
+        self.vul_instance_id = vul_instance_id

@@ -14,10 +14,10 @@ class ScanServiceStub(object):
             channel: A grpc.Channel.
         """
         self.Scan = channel.unary_stream(
-                '/ScanService/Scan',
-                request_serializer=scan__pb2.ScanParameter.SerializeToString,
-                response_deserializer=scan__pb2.ScanResult.FromString,
-                )
+            '/ScanService/Scan',
+            request_serializer=scan__pb2.ScanParameter.SerializeToString,
+            response_deserializer=scan__pb2.ScanResult.FromString,
+        )
 
 class ScanServiceServicer(object):
     """Missing associated documentation comment in .proto file."""

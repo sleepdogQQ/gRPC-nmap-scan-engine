@@ -3,7 +3,8 @@ disable_existing_loggers: no  # 是否覆蓋以前的配置logger
 formatters:
   base:
     # format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    format: "[%(asctime)20s]-[%(levelname)s]-%(message)s"
+    # format: "[%(asctime)20s]-[%(levelname)s]-%(message)s"
+    format: "[%(levelname)5s:%(asctime)20s]-[%(filename)12s:%(lineno)4s]-%(funcName)16s()-%(message)s"
 
 # handler 的設定
 handlers:

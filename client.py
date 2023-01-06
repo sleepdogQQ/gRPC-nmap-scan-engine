@@ -81,7 +81,7 @@ rapid7_data = {
     "api_url":"api/3",
     "api_user":"nxadmin",
     "api_password":"nxadmin",
-    "site_regex":["^B85B[\w]+"]
+    "site_regex":["^B85B[\w]?"]
 }
 
 logger = Logger.debug_level()

@@ -49,32 +49,27 @@ class APIHost(object):
             logger.info(message)
             return False, {"message": message}
 
-        if(res_result.status_code==200):
-            try:
-                res_result.json()
-            except json.decoder.JSONDecodeError:
-                message = f"request was return 200, but it can,t be json() parsed"
-                logger.info(message)
-                raise
-            return True, res_result.json()
+        if(res_result.status_code>=200 and res_result.status_code<300):
+            return True, res_result
         else:
             message = f"the get url is fail, status_code:{res_result.status_code}"
             logger.info(message)
+            logger.debug(res_result.text)
             return False, {"message": message}
 
     # POST
     @staticmethod
-    def requests_post(url:str, post_data:dict, headers:dict, **kwargs) -> tuple[bool, Any]:
-        post_data = json.dumps(post_data ,indent=4, sort_keys=True, default=str)
-        res_result = requests.post(url=url, data=post_data, headers=headers, **kwargs)
-        if(res_result.status_code==200):
+    def requests_post(url:str, post_data:dict=None, headers:dict=None, **kwargs) -> tuple[bool, Any]:
+        res_result = requests.post(url=url, json=post_data, headers=headers, **kwargs)
+        if(res_result.status_code>=200 and res_result.status_code<300):
             try:
                 res_result.json()
             except json.decoder.JSONDecodeError:
                 return False, {"message": "request was return 200, but it can,t be json() parsed"}
             return True, res_result.json()
         else:
-            logger.debug(res_result.status_code)
+            message = f"the post url is fail, status_code:{res_result.status_code}"
+            logger.info(message)
             logger.debug(res_result.text)
             return False, {"message": f"request status_code {res_result.status_code}"}
     
@@ -83,14 +78,15 @@ class APIHost(object):
     def requests_put(url:str, put_data:dict, headers:dict, **kwargs) -> tuple[bool, Any]:
         put_data = json.dumps(put_data ,indent=4, sort_keys=True, default=str)
         res_result = requests.put(url=url, data=put_data, headers=headers, **kwargs)
-        if(res_result.status_code==200):
+        if(res_result.status_code>=200 and res_result.status_code<300):
             try:
                 res_result.json()
             except json.decoder.JSONDecodeError:
                 return False, {"message": "request was return 200, but it can,t be json() parsed"}
             return True, res_result.json()
         else:
-            logger.debug(res_result.status_code)
+            message = f"the put url is fail, status_code:{res_result.status_code}"
+            logger.info(message)
             logger.debug(res_result.text)
             return False, {"message": f"request status_code {res_result.status_code}"}
 

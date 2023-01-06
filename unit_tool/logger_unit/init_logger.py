@@ -37,3 +37,4 @@ class Logger:
             config = yaml.load(f, Loader=yaml.FullLoader)
             logging.config.dictConfig(config)
             return logging.getLogger()
+            

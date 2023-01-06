@@ -20,3 +20,16 @@ class Rapid7API(APIHost):
 
     def setting_auth(self, username:str, password:str):
         self.auth = (username, password)
+
+class UploadServer(APIHost):
+    def __init__(self) -> None:
+        self.token = str
+        super().__init__()
+    
+    def setting_token(self, token:str):
+        self.token = token
+    
+    def setting_headers(self):
+        self.headers = {
+            "Auth":self.token
+        }

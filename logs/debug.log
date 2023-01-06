@@ -1,0 +1,37 @@
+[ INFO:2023-01-06 18:38:59,001]-[base_unit.py:  18]-record_program_process()-...running...
+[ INFO:2023-01-06 18:39:02,212]-[   server.py: 255]-            Base()- --Rapid7_Base action begin--
+[ INFO:2023-01-06 18:39:02,284]-[middleware.py: 114]-get_sites_detail()-get 3 site records
+[ INFO:2023-01-06 18:39:02,341]-[middleware.py:  38]-__check_the_site_name_by_regex()-the 2 site will be handler
+[ INFO:2023-01-06 18:39:02,342]-[middleware.py:  95]-__ckeck_lastScanTime()-the 0 site will be handler
+[ INFO:2023-01-06 18:39:02,342]-[   server.py: 275]-            Base()-No any data need to be recorded
+[ INFO:2023-01-06 18:39:02,342]-[   server.py: 315]-            Base()- --Rapid7_Base action end--
+[ INFO:2023-01-06 18:39:08,070]-[   server.py: 255]-            Base()- --Rapid7_Base action begin--
+[ INFO:2023-01-06 18:39:08,128]-[middleware.py: 114]-get_sites_detail()-get 3 site records
+[ INFO:2023-01-06 18:39:08,194]-[middleware.py:  38]-__check_the_site_name_by_regex()-the 2 site will be handler
+[ INFO:2023-01-06 18:39:08,194]-[middleware.py:  95]-__ckeck_lastScanTime()-the 2 site will be handler
+[ INFO:2023-01-06 18:39:12,489]-[ init_api.py:  72]-   requests_post()-the post url is fail, status_code:400
+[DEBUG:2023-01-06 18:39:12,490]-[ init_api.py:  73]-   requests_post()-{"detail":"ip: 10.11.233.54 does not exist"}
+[ INFO:2023-01-06 18:39:12,490]-[middleware.py: 181]-upload_asset_info()-asset_10.11.233.54 data add fail
+[ INFO:2023-01-06 18:39:12,504]-[ init_api.py:  72]-   requests_post()-the post url is fail, status_code:400
+[DEBUG:2023-01-06 18:39:12,504]-[ init_api.py:  73]-   requests_post()-{"detail":"ip: 10.11.233.52 does not exist"}
+[ INFO:2023-01-06 18:39:12,504]-[middleware.py: 181]-upload_asset_info()-asset_10.11.233.52 data add fail
+[ INFO:2023-01-06 18:39:12,521]-[ init_api.py:  72]-   requests_post()-the post url is fail, status_code:400
+[DEBUG:2023-01-06 18:39:12,521]-[ init_api.py:  73]-   requests_post()-{"detail":"ip: 10.11.233.53 does not exist"}
+[ INFO:2023-01-06 18:39:12,521]-[middleware.py: 181]-upload_asset_info()-asset_10.11.233.53 data add fail
+[ INFO:2023-01-06 18:39:12,537]-[ init_api.py:  72]-   requests_post()-the post url is fail, status_code:400
+[DEBUG:2023-01-06 18:39:12,537]-[ init_api.py:  73]-   requests_post()-{"detail":"ip: 10.11.233.51 does not exist"}
+[ INFO:2023-01-06 18:39:12,537]-[middleware.py: 181]-upload_asset_info()-asset_10.11.233.51 data add fail
+[ INFO:2023-01-06 18:39:13,143]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.101 data add success
+[ INFO:2023-01-06 18:39:13,185]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.25 data add success
+[ INFO:2023-01-06 18:39:13,223]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.27 data add success
+[ INFO:2023-01-06 18:39:13,260]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.30 data add success
+[ INFO:2023-01-06 18:39:13,294]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.102 data add success
+[ INFO:2023-01-06 18:39:13,330]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.200 data add success
+[ INFO:2023-01-06 18:39:13,364]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.130 data add success
+[ INFO:2023-01-06 18:39:13,401]-[middleware.py: 179]-upload_asset_info()-asset_10.11.109.70 data add success
+[ INFO:2023-01-06 18:39:13,426]-[ init_api.py:  72]-   requests_post()-the post url is fail, status_code:400
+[DEBUG:2023-01-06 18:39:13,426]-[ init_api.py:  73]-   requests_post()-{"detail":"ip: 10.11.1.160 does not exist"}
+[ INFO:2023-01-06 18:39:13,426]-[middleware.py: 181]-upload_asset_info()-asset_10.11.1.160 data add fail
+[ INFO:2023-01-06 18:39:13,466]-[middleware.py: 269]-upload_asset_vul_info()-asset_vul_apps/rapid7_asset/vul_csv/rapid7_vul_477.csv csv file upload succcess
+[ INFO:2023-01-06 18:39:13,518]-[middleware.py: 269]-upload_asset_vul_info()-asset_vul_apps/rapid7_asset/vul_csv/rapid7_vul_479.csv csv file upload succcess
+[ INFO:2023-01-06 18:39:13,518]-[   server.py: 315]-            Base()- --Rapid7_Base action end--
