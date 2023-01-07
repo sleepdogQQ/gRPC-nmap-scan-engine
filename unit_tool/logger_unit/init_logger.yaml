@@ -44,10 +44,10 @@ root: #默認情況下配置
 loggers: #如果有設定loggers的話會採用，否則採用root設定
   info_module:
     level: INFO
-    handlers: [console,info_file_handler]
+    handlers: [console, info_file_handler]
     propagate: no
   debug_module:
     level: DEBUG
-    handlers: [info_file_handler]
+    handlers: [console, info_file_handler]
     propagate: no
  
