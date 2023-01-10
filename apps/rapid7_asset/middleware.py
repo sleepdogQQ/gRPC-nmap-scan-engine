@@ -185,7 +185,7 @@ class Rapid7Handler():
         def search_scan_id(site_id:int) -> int:
             url = ''.join(["https://", self.rapid7_api.url, f"/sites/{site_id}/scans"]) # https://10.11.109.101:3780/api/3/sites/{id}/scans
             res = self.rapid7_api.requests_get(url, auth=self.rapid7_api.auth, verify=False)
-            if(res[0]):
+            if(res[0] and res[1].json().get("resources", []) != []):
                 scan_id = res[1].json().get("resources")[0].get("id")
                 return scan_id
             else:
