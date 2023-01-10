@@ -180,8 +180,7 @@ class Rapid7Handler():
             else:
                 logger.info(f"asset_{each_asset.ip} data add fail")
 
-    def get_rapid7_vul_report_info(self, site:Site) -> tuple:
-        
+    def get_rapid7_vul_report_info(self, site:Site):
         def search_scan_id(site_id:int) -> int:
             url = ''.join(["https://", self.rapid7_api.url, f"/sites/{site_id}/scans"]) # https://10.11.109.101:3780/api/3/sites/{id}/scans
             res = self.rapid7_api.requests_get(url, auth=self.rapid7_api.auth, verify=False)
@@ -189,7 +188,7 @@ class Rapid7Handler():
                 scan_id = res[1].json().get("resources")[0].get("id")
                 return scan_id
             else:
-                logger.info("get scan_id fail")
+                logger.info("site_{site_id} get scan_id failv")
                 raise
 
         scan_id = search_scan_id(site.id)
