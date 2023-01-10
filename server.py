@@ -283,8 +283,12 @@ class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
                 each_site.add_belong_asset_data(asset_list)
             # asset vul detail
             for each_site in site_entity_set:
-                rapid7handler.get_rapid7_vul_report_info(each_site) # (report_id, instance_id)
-            
+                try:
+                    rapid7handler.get_rapid7_vul_report_info(each_site)
+                except:
+                    logger.info(f"{each_site.id} can,t create the vul report")
+                    continue
+
             rapid7handler.upload_asset_info(each_site.belong_asset)
             rapid7handler.upload_asset_vul_info()
             

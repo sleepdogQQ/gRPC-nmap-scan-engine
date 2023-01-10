@@ -188,7 +188,7 @@ class Rapid7Handler():
                 scan_id = res[1].json().get("resources")[0].get("id")
                 return scan_id
             else:
-                logger.info("site_{site_id} get scan_id failv")
+                logger.info("site_{site_id} get scan_id fail")
                 raise
 
         scan_id = search_scan_id(site.id)
