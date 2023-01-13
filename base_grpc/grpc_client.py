@@ -11,7 +11,7 @@ _ACCESS_TOKEN = "systex_token"
 # 與 server 相同
 class SSLCredentialsMixin:
     CRT_PATH = None
-    _SERVER_CERTIFICATE = None
+    _CA_CERTIFICATE = None
 
     def __init__(self) -> None:
         self.load_credentials()
@@ -22,7 +22,7 @@ class SSLCredentialsMixin:
         '''
         try:
             with open(self.CRT_PATH, 'rb') as f:
-                self._SERVER_CERTIFICATE = f.read()
+                self._CA_CERTIFICATE = f.read()
         except TypeError as e:
             message = f"the CRT_PATH or KEY_PATH still is None, please confime the env is useful"
             record_program_process(logger, message)
@@ -39,7 +39,7 @@ class AuthGateway(grpc.AuthMetadataPlugin):
         callback(((_ACCESS_TOKEN, signature),), None)
 
 class BasegRPClient(SSLCredentialsMixin):
-    CRT_PATH  = os.getenv("GRPC_CRT_PATH")
+    CRT_PATH  = os.getenv("GRPC_CA_PATH")
 
     def __init__(self,host:str, port:int):
         self.host = host
