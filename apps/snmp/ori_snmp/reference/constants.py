@@ -1,5 +1,9 @@
 
 OID_SYSTEM = '1.3.6.1.2.1.1'
+
+BASE_DEVICEINFO_VALUE = ["sysDescr", "sysObjectID", "sysUpTime", 
+"sysContact", "sysName", "sysLocation", "sysServices", "sysORLastChange"]
+
 OID_DEVICEINFO = {
     "1.3.6.1.2.1.1.1.0": "sysDescr",
     "1.3.6.1.2.1.1.2.0": "sysObjectID",
@@ -25,5 +29,7 @@ SNMP_HASH_TABLE ={
     "1.3.6.1.6.3.12.1.4": "snmpUnavailableContexts(4)",
     "1.3.6.1.6.3.12.1.5": "snmpUnknownContexts(5)"
 }
+
+
 
 

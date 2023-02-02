@@ -21,3 +21,5 @@ pyproject.toml
 venv/
 .venv/
 
+# logs
+logs/

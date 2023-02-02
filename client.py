@@ -23,58 +23,58 @@ scan_condition = {
 deviceinfo_data = {
     "scan_type":"deviceinfo",
     "host_config":{
-        "host":"10.11.5.254",
+        "host":"10.40.192.222",
         "port":161
     },
     "snmp_config":{
-        "read_community":"systexadmin",
+        "read_community":"public",
         "version":"v2"
     }
 }
 get_data = {
     "scan_type":"get",
     "host_config":{
-        "host":"10.11.5.254",
+        "host":"10.40.192.227",
         "port":161
     },
     "snmp_config":{
-        "read_community":"systexadmin",
+        "read_community":"public",
         "version":"v2",
-        "oid":"1.3.6.1.2.1.1.1.0"
+        "oid":"1.3.6.1.4.1.2636.3.15.10.1.17"
         # "oid":"1.3.6.1.4.1.2620.1.6.123.1.49"
-
     }
 }
 getbulk_data = {
     "scan_type":"getbulk",
     "host_config":{
-        "host":"10.11.5.254",
+        "host":"10.40.192.227",
         "port":161,
     },
     "snmp_config":{
-        "read_community":"systexadmin",
+        "read_community":"public",
         "version":"v2",
-        "max_repetitions":10,
+        "max_repetitions":100,
         "convert_to_string":False,
-        "oid":"1.3.6.1.2.1.1.1.0"
+        "oid":"1.3.6.1.4.1.2636.3.5.2.1.1"
         # "oid":"1.3.6.1.4.1.2620.1.6.123.1.49"
     }
 }
 scan_data = {
     # nmap
     "nmap_config":{
-        "network":["10.40.192.222-227", "10.11.5.254"],
+        "network":["10.40.192.222-227", "10.11.5.254", "10.11.5.249", "10.11.5.250"],
+        # "network":["10.40.192.222-227"],
+        "network":["10.11.5.250"],
         "port":161,
         "scan_spend":"T3"
     },
     # snmp
     "snmp_config":{
-        "read_community":["systexadmin", "public"],
+        "read_community":["public", "systexadmin", "systex"],
         "version":"v2",
     },
     "update_dynamic":False
 }
-
 rapid7_data = {
     "host":"10.11.109.101",
     "port":3780,
@@ -101,11 +101,11 @@ def run():
             # responses = stub.Scan(scan_pb2.ScanParameter(**scan_condition))
             # for response in responses:
             #     print(response)
-            # snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
-            # response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**getbulk_data)))
+            snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
+            response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**deviceinfo_data)))
             # response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
-            rapid7_stub = scan_pb2_grpc.Rapid7ServiceStub(channel)
-            response = MessageToDict(rapid7_stub.Base(scan_pb2.Rapid7Request(**rapid7_data)))
+            # rapid7_stub = scan_pb2_grpc.Rapid7ServiceStub(channel)
+            # response = MessageToDict(rapid7_stub.Base(scan_pb2.Rapid7Request(**rapid7_data)))
             print(response)
             return response
     except TypeError:

@@ -10,17 +10,19 @@ from typing import List
 import grpc
 import json
 import os
+import re
 import sys
 import requests
 import traceback
-from pysnmp.smi.error import NoSuchObjectError
 from google.protobuf.json_format import MessageToDict
 from grpc_reflection.v1alpha import reflection
-from base_grpc.grpc_server import SSLgRPCServer, BasegRPCServer
-from apps.snmp.entity import SNMPBaseHandler, SNMPServerInfo
+from base_grpc.grpc_server import SSLgRPCServer
 from apps.nmap_scan.nmmain import Scanner
 from unit_tool.base_unit import record_program_process
 from apps.rapid7_asset.middleware import Rapid7API, Rapid7Handler, UploadServer
+from apps.snmp import DeviceExDataHandler
+from apps.snmp.ori_snmp import SNMPBaseHandler, SNMPServerInfo
+from apps.snmp.ori_snmp.reference.constants import BASE_DEVICEINFO_VALUE
 
 from  unit_tool.logger_unit import Logger
 logger = Logger.debug_level()
@@ -73,7 +75,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             elif(snmp_action == "getbulk"):
                 result = snmp_handler.get_bulk()
             else:
-                logger.info("input request body is not right")            
+                logger.info("input request body is not right")
 
             if result:
                 return scan_pb2.SNMPResponse(status=True, message="success.", result=json.dumps(result))
@@ -88,6 +90,8 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
 
     def Discover(self, request, context) -> scan_pb2.SNMPResponse:
         try:
+            result = dict()
+
             data = MessageToDict(request, preserving_proto_field_name=True)
 
             nmap_config = data.get("nmap_config", {})
@@ -111,6 +115,8 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
                     scanner.args = scan_args
                     try:
                         res = scanner.scan()
+                        if(res.get("scan", {})=={}):
+                            logger.info(f"{scanner.hosts} scan success, but not get any data")
                         detected_open_host.extend(list(res.get("scan",{}).keys()))
                     except:
                         logger.info(f"discover {network} failed")
@@ -118,7 +124,7 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
                 return detected_open_host
 
             detected_open_host = _discover_hosts()
-            
+
             # 依據 read_community 測試能否抓取到 host snmp deviceinfo 資料
             def _test_and_record_deviceinfo(detected_open_host:list) -> List[SNMPServerInfo]:
                 """將抓到的 host 使用 read_community 測試是否可以生成 SNMPServerInfo 資料
@@ -159,86 +165,101 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
 
             snmp_server_info_set = _test_and_record_deviceinfo(detected_open_host)
 
-            result = dict()
-            # 擴充 deviceinfo_set 資訊
+            # 個別設備（ip, host）擴充 deviceinfo_set 資訊
             for index, SNMPServerInfObject in enumerate(snmp_server_info_set):
+                device_info_data = dict()
                 assert(isinstance(SNMPServerInfObject,SNMPServerInfo), " every (snmp_server_info_set) args must be SNMPServerInfo object")
-                # 從 sysObjectID  判斷廠牌與 vendor_iana 等資訊
-                device_info_data = SNMPServerInfObject.expend_device_info()
-                # 先紀錄必要資訊
+                
+                # 確定 sysObjectID 並非為空自串
+                sysObjectID = SNMPServerInfObject.raw_deviceinfo.get("sysObjectID")
+                if(sysObjectID == ''):
+                    logger.info(f"{SNMPServerInfObject.host} get_deviceinfo success,but not get the sysObjectID, so skip the deviceinfo_expend")
+                    continue
+
+                #+ 前置階段（基本資料）
+                # 紀錄 snmp 基本訊息
                 device_info_data.update({"port":nmap_config.get("port")})
                 device_info_data.update({"read_community":SNMPServerInfObject.community_name})
                 device_info_data.update({"version":snmp_config.get("version")})
-                # 根據 sysObjectID 使用 get_bulk 抓取資料
-                device_info_data.update({"detail":dict()}) # 先宣告儲存空間
-                def _get_more_info_by_sysobjectid(host:str, device_info_data:dict) -> dict:
-                    getbulk_data = {
-                        "scan_type":"getbulk",
+                
+                #+ 第一階段（device_iana 資料）
+                device_info_data.update({"base_device_info":dict()})
+                vendor_info_tuple =  SNMPServerInfObject.determine_the_vendor_iana(sysObjectID)
+                device_info_data.get("base_device_info", {}).update({"vendor_iana": vendor_info_tuple[0]})
+                device_info_data.get("base_device_info", {}).update({"equipment_num": vendor_info_tuple[1]})
+                
+                # DeviceExDataHandler init
+                discover_handler = DeviceExDataHandler.declare_from_data(SNMPServerInfObject.snmp_deviceinfo_data_record, sysObjectID)
+                
+                #+ 第一階段（device 資料）
+                # 從 sysObjectID 判斷廠牌與延伸資料
+                flat_data = discover_handler.detect_device_info()
+                def _simple_snmp_get(snmp_scan_ref:dict, oid) -> str:
+                    oid_result = str
+                    get_data = {
+                        "scan_type":"get",
                         "host_config":{
-                            "host":host,
-                            "port":device_info_data.get("port"),
+                            "host": snmp_scan_ref.get("host_config", {}).get("host"),
+                            "port": snmp_scan_ref.get("host_config", {}).get("port")
                         },
                         "snmp_config":{
-                            "read_community":device_info_data.get("read_community"),
-                            "version":device_info_data.get("version"),
-                            "max_repetitions":1000,
-                            "convert_to_string":False,
-                            "oid":device_info_data.get("sysObjectID")
+                            "read_community": snmp_scan_ref.get("snmp_config", {}).get("read_community"),
+                            "version": snmp_scan_ref.get("snmp_config", {}).get("version"),
+                            "oid": oid
                         }
                     }
-                    try:
-                        snmp_handler = SNMPBaseHandler.declare_from_data(getbulk_data)
-                        return snmp_handler.get_bulk()
-                    except NoSuchObjectError as e:
-                        message = f" Can,t use the oid({device_info_data.get('sysObjectID')}) to get_bulk in host({host}), please check it is correct"
-                        logger.info(message)
-                        raise
-                try:
-                    more_detail_oid_info = _get_more_info_by_sysobjectid(SNMPServerInfObject.host, device_info_data)
-                except NoSuchObjectError as e:
-                    message = f" {SNMPServerInfObject.host} run get_more_info_by_sysobjectid fun was fail"
-                    logger.info(message)
-                    continue
-                
-                # 將前一動得到的 more_detail_oid_info 結果轉換成可讀性較高的英文文字敘述再寫入
-                def _convert_oid_description(more_detail_oid_info:dict) -> dict:
-                    more_detail_oid_info = SNMPServerInfo.replace_oid_description_2_text_description(
-                        more_detail_oid_info, 
-                        updata_dynamic = data.get("update_dynamic", False)
-                    )
-                    if(more_detail_oid_info):
-                        return more_detail_oid_info
+                    snmp_handler = SNMPBaseHandler.declare_from_data(get_data)
+                    oid_result = snmp_handler.get()
+                    if(oid_result):
+                        return oid_result[0]
                     else:
-                        message = f" [ip:{SNMPServerInfObject.host}-convert_oid_description, oid:{device_info_data.get('sysObjectID', '')}] can,t find any other data"
-                        logger.info(message)
-                        return {}
-                device_info_data.get("detail", {}).update({"by_sys_objectID":_convert_oid_description(more_detail_oid_info)})
+                        return "no result"
+                temp = dict()
+                for key, value in flat_data.items():
+                    if(isinstance(value, str)):
+                        temp.update({key: value})
+                    elif(isinstance(value, list)):
+                        for parsed_condition in value:
+                            if("match_pattern" in parsed_condition): # 保留之後有可能會有其他標籤的可能
+                                oid_result = _simple_snmp_get(SNMPServerInfObject.snmp_deviceinfo_data_record, parsed_condition.get("OID"))
+                                regex_parse = re.compile(parsed_condition.get('match_pattern'))
+                                parsed_res = regex_parse.match(oid_result)
+                                if(parsed_res != None):
+                                    temp.update({key: parsed_condition.get('match_value')})
+                                    break
+                                else:
+                                    continue
+                            temp.update({key: "regex not match"})
+                    elif("extract_value" in value):
+                        oid_result = _simple_snmp_get(SNMPServerInfObject.snmp_deviceinfo_data_record, value.get("OID"))
+                        regex_parse = re.compile(value.get('extract_value'))
+                        parsed_res = regex_parse.match(oid_result)
+                        if(parsed_res != None):
+                            temp.update({key: oid_result})
+                        else:
+                            temp.update({key: "regex not match"})
+                    elif("OID" in value):
+                        oid_result = _simple_snmp_get(SNMPServerInfObject.snmp_deviceinfo_data_record, value.get("OID"))
+                        temp.update({key: oid_result})
+                    
+                    device_info_data.update({"extend_device_info":dict()})
+                for value_name in temp:
+                    if(value_name in BASE_DEVICEINFO_VALUE):
+                        if(value_name == "sysUpTime" and temp.get(value_name) != 'no result'):
+                            temp.update({value_name: SNMPServerInfObject.second2time(temp.get(value_name))})
+                        device_info_data.get("base_device_info", {}).update({value_name: temp.get(value_name)})
+                    else:
+                        device_info_data.get("extend_device_info", {}).update({value_name: temp.get(value_name)})
 
-                # 從 extra_detail 擴充 device_info資訊
-                def _get_more_info_by_extra_detail(device_info_data:dict, snmp_reference:dict) -> dict:
-                    extra_detail_res = dict()
-                    if(device_info_data.get("extra_detail", False)):
-                        for every_oid in device_info_data.get('extra_detail', list()):
-                            get_data = {
-                                "scan_type":"get",
-                                "host_config":{
-                                    "host":snmp_reference.get("host_config",{}).get("host"),
-                                    "port":snmp_reference.get("host_config",{}).get("port")
-                                },
-                                "snmp_config":{
-                                    "read_community":snmp_reference.get("snmp_config",{}).get("read_community"),
-                                    "version":snmp_reference.get("snmp_config",{}).get("version"),
-                                    "oid":every_oid
-                                }
-                            }
-                            snmp_hander = SNMPBaseHandler.declare_from_data(get_data)
-                            extra_res = snmp_hander.get()
-                            if (extra_res):
-                                extra_detail_res.update({every_oid:extra_res[0]})
-                    return extra_detail_res
-                device_info_data.get("detail", {}).update({"by_extra_oid":_get_more_info_by_extra_detail(device_info_data, SNMPServerInfObject.snmp_deviceinfo_data_record)})
-                device_info_data.pop("extra_detail")
-                # 把資訊與對應主機補上
+                #+ 第二階段（metrics 資料）
+                # 從 profile 的資料集延伸
+                detail = discover_handler.expend_device_detail_info()
+                device_info_data.update({"expand_device_detail_info":detail})
+
+                #+ 第二階段（inteface 資料）
+                interface = discover_handler.expend_device_interface_info()
+                device_info_data.get("expand_device_detail_info", {}).update({"interface":interface})
+
                 result.update({SNMPServerInfObject.host:device_info_data})
             
             return scan_pb2.SNMPResponse(status=True, message="success", result=json.dumps(result))
@@ -248,7 +269,6 @@ class SnmpServicer(scan_pb2_grpc.SNMPServiceServicer):
             logger.debug(sys.exc_info())
             logger.debug(traceback.format_exc())
             return scan_pb2.SNMPResponse(status=False, message=message, result=None)
-
 class Rapid7Servicer(scan_pb2_grpc.Rapid7ServiceServicer):
     def Base(self, request, context) -> scan_pb2.Rapid7Response:
         try:
