@@ -1,10 +1,61 @@
-grpcio
-grpcio-tools
-requests
-python-nmap
-grpcio-reflection
-PyYAML
-python-dotenv
-beautifulsoup4
-pysnmp
-
+attrs==22.2.0; python_version >= "3.7"
+beautifulsoup4==4.11.1; python_full_version >= "3.6.0"
+binary==1.0.0
+certifi==2022.12.7; python_version >= "3.7" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0")
+cffi==1.15.1; python_version >= "3.6"
+charset-normalizer==2.1.1; python_version >= "3.7" and python_version < "4" and python_full_version >= "3.6.0" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0")
+colorama==0.4.6; python_version >= "3.7" and python_full_version < "3.0.0" and sys_platform == "win32" or sys_platform == "win32" and python_version >= "3.7" and python_full_version >= "3.7.0"
+coverage==7.1.0; python_version >= "3.7"
+cryptography==39.0.0; python_version >= "3.6"
+datadog-checks-base==30.0.0
+datadog-checks-dev==17.8.1
+exceptiongroup==1.1.0; python_version < "3.11" and python_version >= "3.7"
+flaky==3.7.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0"
+grpcio-reflection==1.51.1; python_version >= "3.6"
+grpcio-tools==1.51.1; python_version >= "3.7"
+grpcio==1.51.1; python_version >= "3.7"
+idna==3.4; python_version >= "3.7" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0")
+iniconfig==2.0.0; python_version >= "3.7"
+jinja2==3.1.2; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+markdown-it-py==2.1.0; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+markupsafe==2.1.2; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+mdurl==0.1.2; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+memray==1.6.0; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+mock==5.0.1; python_version >= "3.6"
+packaging==23.0; python_version >= "3.7"
+pluggy==1.0.0; python_version >= "3.7"
+ply==3.11
+prometheus-client==0.16.0; python_version >= "3.6"
+protobuf==4.21.12; python_version >= "3.7"
+psutil==5.9.4; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0"
+py-cpuinfo==9.0.0; python_version >= "3.7"
+pyasn1==0.4.8
+pycparser==2.21; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+pycryptodomex==3.16.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
+pydantic==1.10.4; python_version >= "3.7"
+pygal==3.0.0; python_version >= "3.7"
+pygaljs==1.0.2; python_version >= "3.7"
+pygments==2.14.0; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+pysmi==0.3.4
+pysnmp==4.4.12
+pytest-asyncio==0.20.3; python_version >= "3.7"
+pytest-benchmark==4.0.0; python_version >= "3.7"
+pytest-cov==4.0.0; python_version >= "3.6"
+pytest-memray==1.4.0; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin")
+pytest-mock==3.10.0; python_version >= "3.7"
+pytest==7.2.1; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin")
+python-dateutil==2.8.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.3.0")
+python-dotenv==0.21.0; python_version >= "3.7"
+python-nmap==0.7.1
+pyyaml==6.0; python_version >= "3.6"
+requests-toolbelt==0.10.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
+requests-unixsocket==0.3.0
+requests==2.28.1; python_version >= "3.7" and python_version < "4"
+rich==13.3.1; python_version >= "3.8" and (platform_system == "Linux" or platform_system == "Darwin") and python_full_version >= "3.7.0"
+six==1.16.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0"
+soupsieve==2.3.2.post1; python_version >= "3.6" and python_full_version >= "3.6.0"
+tenacity==8.1.0; python_version >= "3.6"
+tomli==2.0.1; python_full_version <= "3.11.0a6" and python_version >= "3.7" and python_version < "3.11"
+typing-extensions==4.4.0; python_version >= "3.7"
+urllib3==1.26.13; python_version >= "3.7" and python_full_version < "3.0.0" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0") or python_version >= "3.7" and python_version < "4" and python_full_version >= "3.6.0" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0")
+wrapt==1.14.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")

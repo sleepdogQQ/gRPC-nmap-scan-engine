@@ -64,7 +64,7 @@ scan_data = {
     "nmap_config":{
         "network":["10.40.192.222-227", "10.11.5.254", "10.11.5.249", "10.11.5.250"],
         # "network":["10.40.192.222-227"],
-        "network":["10.11.5.250"],
+        # "network":["10.11.5.250"],
         "port":161,
         "scan_spend":"T3"
     },
@@ -102,8 +102,8 @@ def run():
             # for response in responses:
             #     print(response)
             snmp_stub = scan_pb2_grpc.SNMPServiceStub(channel)
-            response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**deviceinfo_data)))
-            # response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
+            # response = MessageToDict(snmp_stub.Base(scan_pb2.BaseRequest(**deviceinfo_data)))
+            response = MessageToDict(snmp_stub.Discover(scan_pb2.DiscoverRequest(**scan_data)))
             # rapid7_stub = scan_pb2_grpc.Rapid7ServiceStub(channel)
             # response = MessageToDict(rapid7_stub.Base(scan_pb2.Rapid7Request(**rapid7_data)))
             print(response)
